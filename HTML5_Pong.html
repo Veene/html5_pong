@@ -12,21 +12,96 @@
     
 
     <script>
+        let ballX = 75;
+        let ballY = 75;
+        let ballSpdX = 5;
+        let ballSpdY = 7;
+
+        const PADDLE_WIDTH = 100;
+        const PADDLE_HEIGHT = 10;
+        const PADDLE_DIST_FROM_EDGE = 60;
+        let paddleX = 400;
+        let paddleY = 250;
+
         let canvas, cancasContext;
+
+        function updateMousePos(event) { //havent gotten 100% but just use for mouse follow event
+            let rect = canvas.getBoundingClientRect();
+            let root = document.documentElement;
+            let mouseX = event.clientX - rect.left - root.scrollLeft;
+            let mouseY = event.clientY - rect.top - root.scrollTop;
+
+            paddleX = mouseX-PADDLE_WIDTH/2;
+        }
 
         window.onload = function() {
             //canvas grabs the canvas on page width and height
             canvas = document.getElementById('gameCanvas');
             //canvasContext is the graphical buffer so that we can draw shapes, fill color etc
             canvasContext = canvas.getContext('2d');
+            let framesPerSecond = 30;
+            setInterval(updateAll, 1000/framesPerSecond)
 
-            canvasContext.fillStyle = 'black';
-            canvasContext.fillRect(0,0,canvas.width, canvas.height);
+            canvas.addEventListener('mousemove', updateMousePos)
+        }
+        function updateAll() {
+            moveAll();
+            drawAll();
+        }
 
-            canvasContext.fillStyle ="white";
+        function ballReset() {
+            ballX = canvas.width/2;
+            ballY = canvas.height/2;
+        }
+
+        function moveAll() {
+            ballX += ballSpdX;
+            ballY += ballSpdY;
+
+            if(ballX > canvas.width-10) { //RIGHT SIDE
+                ballSpdX = -ballSpdX;
+            }
+            if(ballX < 0 + 10) {    //LEFT SIDE
+                ballSpdX = -ballSpdX;
+            }
+            if(ballY > canvas.height-10) { //BOTTOM
+                ballReset();
+                // ballSpdY = -ballSpdY;
+            }
+            if(ballY < 0 + 10) { //TOP
+                ballSpdY = -ballSpdY;
+            }
+            let paddleTopEdgeY = canvas.height-PADDLE_DIST_FROM_EDGE;
+            let paddleBottomEdgeY = canvas.height-PADDLE_DIST_FROM_EDGE + PADDLE_HEIGHT;
+            let paddleLeftEdgeX = paddleX;
+            let paddleRightEdgeX = paddleLeftEdgeX + PADDLE_WIDTH;
+            if( ballY > paddleTopEdgeY && 
+                ballY < paddleBottomEdgeY &&
+                ballX > paddleLeftEdgeX && 
+                ballX < paddleRightEdgeX) {
+
+                    ballSpdY = -ballSpdY;
+
+                    let centerOfPaddleX = paddleX + PADDLE_WIDTH/2;
+                    let ballDistFromPaddleCenterX = ballX - centerOfPaddleX;
+                    ballSpdX = ballDistFromPaddleCenterX * 0.35;
+
+                }
+        }
+
+        function drawAll() {
+            drawRect(0,0,canvas.width, canvas.height, 'black') //clear canvas each frame by redrawing it FIRST
+            drawBall(ballX, ballY, 10, 'white'); //draw ball
+            drawRect(paddleX, canvas.height-PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_HEIGHT, 'white')
+        }
+        function drawRect(x, y, width, height, color) {
+            canvasContext.fillStyle = color;
+            canvasContext.fillRect(x, y, width, height)
+        }
+        function drawBall(x, y, radius, color) {
+            canvasContext.fillStyle = color;
             canvasContext.beginPath();
-            //.arc (x, y, radius, where to start degrees, where to end degrees, clockwise?(true or false))
-            canvasContext.arc(100, 100, 10, 0, Math.PI*2, true);
+            canvasContext.arc(x, y, radius, 0, Math.PI*2, true);
             canvasContext.fill();
         }
     </script>
