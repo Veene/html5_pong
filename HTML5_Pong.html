@@ -17,6 +17,12 @@
         let ballSpdX = 5;
         let ballSpdY = 7;
 
+        const BRICK_W = 100;
+        const BRICK_H = 50;
+        const BRICK_COUNT = 8;
+
+        let brickGrid = new Array(BRICK_COUNT);
+
         const PADDLE_WIDTH = 100;
         const PADDLE_HEIGHT = 10;
         const PADDLE_DIST_FROM_EDGE = 60;
@@ -25,13 +31,21 @@
 
         let canvas, cancasContext;
 
+        let mouseX;
+        let mouseY;
+
         function updateMousePos(event) { //havent gotten 100% but just use for mouse follow event
             let rect = canvas.getBoundingClientRect();
             let root = document.documentElement;
-            let mouseX = event.clientX - rect.left - root.scrollLeft;
-            let mouseY = event.clientY - rect.top - root.scrollTop;
+            mouseX = event.clientX - rect.left - root.scrollLeft;
+            mouseY = event.clientY - rect.top - root.scrollTop;
 
             paddleX = mouseX-PADDLE_WIDTH/2;
+        }
+        function brickReset() {
+            for(let i = 0; i<BRICK_COUNT; i++) {
+                brickGrid[i] = true;
+            }
         }
 
         window.onload = function() {
@@ -43,6 +57,7 @@
             setInterval(updateAll, 1000/framesPerSecond)
 
             canvas.addEventListener('mousemove', updateMousePos)
+            brickReset();
         }
         function updateAll() {
             moveAll();
@@ -88,11 +103,36 @@
 
                 }
         }
+        function drawBricks() {
+            // if(brickGrid[0]) {
+            //     drawRect(0,0,BRICK_W-2,BRICK_H,'blue');
+            // }
+            // if(brickGrid[1]) {
+            //     drawRect(BRICK_W,0,BRICK_W-2,BRICK_H,'blue');
+            // }
+            // if(brickGrid[2]) {
+            //     drawRect(BRICK_W*2,0,BRICK_W-2,BRICK_H,'blue');
+            // }
+            // if(brickGrid[3]) {
+            //     drawRect(BRICK_W*3,0,BRICK_W-2,BRICK_H,'blue');
+            // }
+            // if(brickGrid[4]) {
+            //     drawRect(BRICK_W*4,0,BRICK_W-2,BRICK_H,'blue');
+            // }
+            for(let i = 0; i<brickGrid.length; i++){
+                drawRect(BRICK_W*i,0,BRICK_W-2,BRICK_H,'blue')
+            }
+            
+            
+        }
 
         function drawAll() {
             drawRect(0,0,canvas.width, canvas.height, 'black') //clear canvas each frame by redrawing it FIRST
             drawBall(ballX, ballY, 10, 'white'); //draw ball
             drawRect(paddleX, canvas.height-PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_HEIGHT, 'white')
+            drawBricks();
+            colorText(mouseX+","+mouseY, mouseX, mouseY, 'yellow'); //first param the string "," tells JS to stringify the mouseX and mouseY or else they would just be added together
+            
         }
         function drawRect(x, y, width, height, color) {
             canvasContext.fillStyle = color;
@@ -103,6 +143,10 @@
             canvasContext.beginPath();
             canvasContext.arc(x, y, radius, 0, Math.PI*2, true);
             canvasContext.fill();
+        }
+        function colorText(showWords, textX, textY, fillColor) {
+            canvasContext.fillStyle = fillColor;
+            canvasContext.fillText(showWords, textX, textY);
         }
     </script>
 </body>
