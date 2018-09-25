@@ -15,11 +15,12 @@ var ballSpeedX = 5;
 var ballSpeedY = 7;
 
 const BRICK_W = 80;
-const BRICK_H = 40;
+const BRICK_H = 20;
 const BRICK_COLS = 10; 
 const BRICK_GAP = 2;
-const BRICK_ROWS = 7;
+const BRICK_ROWS = 14;
 var brickGrid = new Array(BRICK_COLS * BRICK_ROWS); //we needed seperate id's so need to keep track of EVERY BRICK
+var bricksLeft = 0;
 
 const PADDLE_WIDTH = 100;
 const PADDLE_THICKNESS = 10;
@@ -49,10 +50,17 @@ function updateMousePos(evt) {
 }
 //RESET BRICKS FUNCTION SET TO TRUE, ADDED TO WINDOW ONLOAD AT THE END
 function brickReset() {
-	for(var i=0; i<BRICK_COLS * BRICK_ROWS;i++){
-		brickGrid[i] = true;
+	bricksLeft = 0;
+	var i;
+	for(i=0; i< 3 * BRICK_COLS;i++){
+		brickGrid[i] = false;
 	}
-	brickGrid[8] = false;
+	for(i; i<BRICK_COLS * BRICK_ROWS;i++){
+		brickGrid[i] = true;
+		bricksLeft++;
+	}
+	//if we wanted to erase one
+	// brickGrid[8] = false;
 }
 
 window.onload = function() {
@@ -65,6 +73,7 @@ window.onload = function() {
 	canvas.addEventListener('mousemove', updateMousePos);
 	//WHEN WINDOW LOADS ALL BRICKS ARE RELOADED WITH BRICK RESET (NEEDS TO SET THEM ALL TO TRUE (VISIBLE))
 	brickReset();
+	ballReset();
 }
 
 function updateAll() {
@@ -75,6 +84,17 @@ function updateAll() {
 function ballReset() {
 	ballX = canvas.width/2;
 	ballY = canvas.height/2;
+}
+
+function isBrickAtColRow(col,row){
+	if(col >= 0 && col < BRICK_COLS 
+	&& row >= 0 && row < BRICK_ROWS){
+		let brickIndexUnderBall = rowColToArrayIndex(col, row);
+		return brickGrid[brickIndexUnderBall];
+	} else {
+		return false;
+	}
+	
 }
 
 function ballBrickHandling() {
@@ -95,8 +115,12 @@ function ballBrickHandling() {
 	//BALL COLLISION BOUNCE DIRECTIONS CHANGE AND BRICK DISAPPEAR
 	if(ballBrickCol >= 0 && ballBrickCol < BRICK_COLS 
 	&& ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS){
-		if(brickGrid[brickIndexUnderBall]){
+		if(isBrickAtColRow(ballBrickCol,ballBrickRow)){
 			brickGrid[brickIndexUnderBall] = false;
+			// in BrickReset(when bricks are first generated) everytime for loop ran to make a brick(true) it also ++ bricksLeft
+			// so here when ball collides with brick, we make it false and then lower bricksLeft count (i still would prefer to delete from array)
+			bricksLeft--;
+			console.log("Bricks left: " + bricksLeft)
 
 			var prevBallX = ballX - ballSpeedX;
 			var prevBallY = ballY - ballSpeedY;
@@ -107,25 +131,17 @@ function ballBrickHandling() {
 			//if the previous frame before bounce, the Col changes from left to right, it means it hit a side of brick
 			//AKA only change the X speed opposite so that it doesnt go magically down as well
 			if(prevBrickCol != ballBrickCol) {
-				var adjBrickSide = rowColToArrayIndex(prevBrickCol, ballBrickRow);
-
-				if(brickGrid[adjBrickSide] == false){
+				if(isBrickAtColRow(ballBrickCol,ballBrickRow) == false){
 					ballSpeedX *= -1;
 					bothTestsFailed = false;
-				}
-				
-				
+				}		
 			}
 			//same as above, but for Row, hit from top or bottom so only change Y speed direction
 			if(prevBrickRow != ballBrickRow) {
-				var adjBrickTopBot = rowColToArrayIndex(ballBrickCol, prevBrickRow);
-
-				if(brickGrid[adjBrickTopBot] == false){
+				if(isBrickAtColRow(ballBrickCol,ballBrickRow) == false){
 					ballSpeedY *= -1;
 					bothTestsFailed = false;
 				}
-				
-				
 			}
 			if(bothTestsFailed) {
 				ballSpeedX *= -1;
@@ -153,20 +169,24 @@ function ballPaddleHandling() {
 		var centerOfPaddleX = paddleX+PADDLE_WIDTH/2;
 		var ballDistFromPaddleCenterX = ballX - centerOfPaddleX;
 		ballSpeedX = ballDistFromPaddleCenterX * 0.35;
-	}
-}
+
+		if(bricksLeft == 0) {
+			brickReset();
+		} // out of bricks, reset them all
+	} // ball center has gone inside the paddle (touched) therefore collision!
+} //end of ballPaddle function
 
 function ballMove() {
 	ballX += ballSpeedX;
 	ballY += ballSpeedY;
 
-	if(ballX < 0) { //left
+	if(ballX < 0 && ballSpeedX < 0.0)  { //left
 		ballSpeedX *= -1;
 	}
-	if(ballX > canvas.width) { // right
+	if(ballX > canvas.width && ballSpeedX > 0.0) { // right
 		ballSpeedX *= -1;
 	}
-	if(ballY < 0) { // top
+	if(ballY < 0 && ballSpeedY < 0.0) { // top
 		ballSpeedY *= -1;
 	}
 	if(ballY > canvas.height) { // bottom

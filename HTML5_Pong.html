@@ -95,6 +95,7 @@ function ballMove() {
 }
 
 function ballBrickHandling() {
+	
 	var ballBrickCol = Math.floor(ballX / BRICK_W);
 	var ballBrickRow = Math.floor(ballY / BRICK_H);
 	var brickIndexUnderBall = rowColToArrayIndex(ballBrickCol, ballBrickRow);
