@@ -8,46 +8,15 @@ var carSpeed = 0;
 
 const GROUNDSPEED_DECAY_MULT = 0.94;
 const DRIVE_POWER = 0.5;
-const REVERSE_POWER = 0.5
+const REVERSE_POWER = 0.2;
 const TURN_RATE = 0.03;
 
-const TRACK_W = 40;
-const TRACK_H = 40;
-const TRACK_GAP = 2;
-const TRACK_COLS = 20;
-const TRACK_ROWS = 15;
-var trackGrid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
-				 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-				 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1,
-				 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
-				 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1,
-				 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
-				 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-				 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-				 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-				 1, 0, 2, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-				 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
-				 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1,
-				 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
-				 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-
-const TRACK_ROAD = 0;
-const TRACK_WALL = 1;
-const TRACK_PLAYERSTART = 2;
-
-var canvas, canvasContext;
-
-const KEY_LEFT_ARROW = 37;
-const KEY_UP_ARROW = 38;
-const KEY_RIGHT_ARROW = 39;
-const KEY_DOWN_ARROW = 40;
-
-var keyHeld_Gas = false;
-var keyHeld_Reverse = false;
-var keyHeld_TurnLeft = false;
-var keyHeld_TurnRight = false;
-
+function carImageLoad() {
+	carPic.onload = function() {
+		carPicLoaded = true;
+	}
+	carPic.src = "player1car.png";
+}
 
 function carReset() {
 	for(var eachRow=0;eachRow<TRACK_ROWS;eachRow++) {
@@ -55,8 +24,7 @@ function carReset() {
 			var arrayIndex = rowColToArrayIndex(eachCol, eachRow); 
 			if(trackGrid[arrayIndex] == TRACK_PLAYERSTART) {
 				trackGrid[arrayIndex] = TRACK_ROAD;
-				carAng = -Math.PI/2 
-				// -90 * Math.Pi/180.0; basically looking for -90 degrees in radians to get facing up
+				carAng = -Math.PI/2;
 				carX = eachCol * TRACK_W + TRACK_W/2;
 				carY = eachRow * TRACK_H + TRACK_H/2;
 			}
@@ -66,6 +34,7 @@ function carReset() {
 
 function carMove() {
 	carSpeed *= GROUNDSPEED_DECAY_MULT;
+
 	if(keyHeld_Gas) {
 		carSpeed += DRIVE_POWER;
 	}
@@ -78,28 +47,13 @@ function carMove() {
 	if(keyHeld_TurnRight) {
 		carAng += TURN_RATE;
 	}
+
 	carX += Math.cos(carAng) * carSpeed;
 	carY += Math.sin(carAng) * carSpeed;
 }
 
-function drawAll() {
-	colorRect(0,0, canvas.width,canvas.height, 'black'); // clear screen
-
-	//colorCircle(carX,carY, 10, 'white'); // draw car
+function carDraw() {
 	if(carPicLoaded) {
-		drawBitMapCenteredWithRotation(carPic, carX, carY, carAng)
-		// canvasContext.drawImage(carPic,
-		// 	carX - carPic.width/2, carY - carPic.height/2);
-			
+		drawBitmapCenteredWithRotation(carPic, carX,carY, carAng);
 	}
-
-	drawTracks();
-}
-
-function drawBitMapCenteredWithRotation(useBitmap, atX, atY, withAng) {
-	canvasContext.save();
-	canvasContext.translate(atX, atY);
-	canvasContext.rotate(withAng);
-	canvasContext.drawImage(useBitmap, -useBitmap.width/2, -useBitmap.height/2);
-	canvasContext.restore();
 }
