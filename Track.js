@@ -63,10 +63,13 @@ function drawTracks() {
 
 			var arrayIndex = rowColToArrayIndex(eachCol, eachRow); 
 
-			if(trackGrid[arrayIndex] == TRACK_WALL) {
-				colorRect(TRACK_W*eachCol,TRACK_H*eachRow,
-					TRACK_W-TRACK_GAP,TRACK_H-TRACK_GAP, 'blue');
-			} // end of is this track here
+			if(trackGrid[arrayIndex] == TRACK_ROAD) {
+				canvasContext.drawImage(roadPic,
+					TRACK_W*eachCol,TRACK_H*eachRow);
+			} else if(trackGrid[arrayIndex] == TRACK_WALL) {
+				canvasContext.drawImage(wallPic,
+					TRACK_W*eachCol,TRACK_H*eachRow);
+			}
 		} // end of for each col
 	} // end of for each row
 
